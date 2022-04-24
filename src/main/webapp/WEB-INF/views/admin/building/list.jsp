@@ -42,7 +42,7 @@
                         </div>
 
                         <div class="widget-body">
-                            <div class="widget-main">
+                            <div class="widget-main" style="padding-bottom: 50px">
                                 <div class="form-horizontal">
                                     <div class="form-group">
                                         <!-- PAGE CONTENT BEGINS -->
@@ -65,11 +65,14 @@
                                             <div>
                                                 <label for="buildingArea"><b>Quận hiện có</b></label>
                                                 </br>
-                                                <select class="col-sm-6" id="form-field-select-1">
+                                                <select class="col-sm-6 form-control" id="district" name="district">
                                                     <option value="">--Chọn quận--</option>
-                                                    <option value="quan_1">Quận 1</option>
-                                                    <option value="quan_2">Quận 2</option>
-                                                    <option value="quan_3">Quận 3</option>
+                                                    <c:forEach items="${districtEnums}" var="item">
+                                                        <option value="${item.key}" ${item.key == modelSearch.district ? 'selected' : '' }>
+                                                                ${item.value}
+                                                        </option>
+                                                    </c:forEach>
+
                                                 </select>
                                             </div>
                                         </div>
@@ -159,11 +162,19 @@
                                         </div>
                                     </div>
 
+
+                                    </div>
                                     <div class="form-group ">
                                         <div class="col-sm-8">
-                                            <label><input type="checkbox"  value="TANG_TRET" id="buildingTypes" name="buildingTypes"><b> Tầng trệt </b></label>
-                                            <label><input type="checkbox" value="NGUYEN_CAN" id="buildingTypes" name="buildingTypes"><b> Nguyên căn </b></label>
-                                            <label><input type="checkbox" value="NOI_THAT" id="buildingTypes" name="buildingTypes"><b> Nội thất </b></label>
+                                            <c:forEach var="item" items="${rentTypesEnums}">
+
+                                                    <label class="checkbox-inline"> ${item.value}
+                                                    </label>
+                                                    <input type="checkbox" name="rentTypes"
+                                                           value="${item.key}" ${fn:contains(fn:join(model.rentTypes,','),item.key) ? 'checked' : '' } />
+                                                    <!-- PAGE CONTENT ENDS -->
+
+                                            </c:forEach>
                                         </div>
                                     </div>
                                     <!-- PAGE CONTENT ENDS -->

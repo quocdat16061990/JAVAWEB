@@ -1,46 +1,119 @@
-package com.laptrinhjavaweb.dto;
+package com.laptrinhjavaweb.entity;
 
-public class BuildingDTO {
-    private Integer id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
+
+@Entity
+@Table(name = "building")
+public class BuildingEntity extends  BaseEntity{
+
+    @Column(name = "avatar")
+    private String avatar;
+
+    @Column(name = "brokeragefee")
     private String brokerAgeFee;
-    private String carFee;
-    private String decorationTime;
-    private String deposit;
-    private String direction;
-    private String district;
-    private String electricityFee;
-    private String level;
-    private String linkOfBuilding;
-    private String map;
-    private String motoFee;
-    private String name;
-    private String note;
-    private Integer numberOfBasement;
-    private Integer floorArea;
-    private String overTimeFee;
-    private String payment;
-    private Integer rentPrice;
-    private String rentPriceDescription;
-    private String rentTime;
-    private String serviceFee;
-    private String street;
-    private String structure;
-    private String ward;
-    private String waterFee;
-    private String[] rentTypes;
-    private String areaRent;
-    private String managerPhone;
-    private String managerName;
-    private String type;
-    private String image;
-    private String base64;
 
-    public Integer getId() {
-        return id;
+    @Column(name = "carfee")
+    private String carFee;
+
+    @Column(name = "decorationtime")
+    private String decorationTime;
+
+    @Column(name = "deposit")
+    private String deposit;
+
+    @Column(name = "direcion")
+    private String direction;
+
+    @Column(name = "district")
+    private String district;
+
+    @Column(name = "electricityfee")
+    private String electricityFee;
+
+    @Column(name = "level")
+    private String level;
+
+    @Column(name = "linkofbuilding")
+    private String linkOfBuilding;
+
+    @Column(name = "map")
+    private String map;
+
+    @Column(name = "motofee")
+    private String motoFee;
+
+    @Column(name = "name")
+    private String name;
+
+    @Lob
+    @Column(name = "note")
+    private String note;
+
+    @Column(name = "numberofbasement")
+    private Integer numberOfBasement;
+
+    @Column(name = "floorarea")
+    private Integer floorArea;
+
+    @Column(name = "overtimefee")
+    private String overtimeFee;
+
+    @Column(name = "payment")
+    private String payment;
+
+    @Column(name = "rentprice")
+    private Integer rentPrice;
+
+    @Lob
+    @Column(name = "rentpricedescription")
+    private String rentPriceDescription;
+
+    @Column(name = "renttime")
+    private String rentTime;
+
+    @Column(name = "servicefee")
+    private String serviceFee;
+
+    @Column(name = "street")
+    private String street;
+
+    @Column(name = "structure")
+    private String structure;
+
+    @Column(name = "type")
+    private String type;
+
+    @Column(name = "ward")
+    private String ward;
+
+    @Column(name = "waterfee")
+    private String waterFee;
+
+    @Column(name = "managername")
+    private String managerName;
+
+    @Column(name = "managerphone")
+    private String managerPhone;
+
+    @Lob
+    @Column(name = "image")
+    private String image;
+
+    @OneToMany(mappedBy = "buildingEntity",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    private List<RentAreaEntity> areaEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "buildingEntity",fetch = FetchType.LAZY,cascade = CascadeType.REMOVE)
+    private List<AssignmentBuildingEntity> assignmentBuildingEntities = new ArrayList<>();
+
+
+    public String getAvatar() {
+        return avatar;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public String getBrokerAgeFee() {
@@ -147,28 +220,12 @@ public class BuildingDTO {
         this.note = note;
     }
 
-    public Integer getNumberOfBasement() {
-        return numberOfBasement;
+    public String getOvertimeFee() {
+        return overtimeFee;
     }
 
-    public void setNumberOfBasement(Integer numberOfBasement) {
-        this.numberOfBasement = numberOfBasement;
-    }
-
-    public Integer getFloorArea() {
-        return floorArea;
-    }
-
-    public void setFloorArea(Integer floorArea) {
-        this.floorArea = floorArea;
-    }
-
-    public String getOverTimeFee() {
-        return overTimeFee;
-    }
-
-    public void setOverTimeFee(String overTimeFee) {
-        this.overTimeFee = overTimeFee;
+    public void setOvertimeFee(String overtimeFee) {
+        this.overtimeFee = overtimeFee;
     }
 
     public String getPayment() {
@@ -183,7 +240,7 @@ public class BuildingDTO {
         return rentPrice;
     }
 
-    public void setRentPrice(Integer rentPrice) {
+    public void setRentPrice(int rentPrice) {
         this.rentPrice = rentPrice;
     }
 
@@ -227,6 +284,14 @@ public class BuildingDTO {
         this.structure = structure;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public String getWard() {
         return ward;
     }
@@ -243,28 +308,40 @@ public class BuildingDTO {
         this.waterFee = waterFee;
     }
 
-    public String[] getRentTypes() {
-        return rentTypes;
+    public List<RentAreaEntity> getAreaEntities() {
+        return areaEntities;
     }
 
-    public void setRentTypes(String[] rentTypes) {
-        this.rentTypes = rentTypes;
+    public void setAreaEntities(List<RentAreaEntity> areaEntities) {
+        this.areaEntities = areaEntities;
     }
 
-    public String getAreaRent() {
-        return areaRent;
+    public List<AssignmentBuildingEntity> getAssignmentBuildingEntities() {
+        return assignmentBuildingEntities;
     }
 
-    public void setAreaRent(String areaRent) {
-        this.areaRent = areaRent;
+    public void setAssignmentBuildingEntities(List<AssignmentBuildingEntity> assignmentBuildingEntities) {
+        this.assignmentBuildingEntities = assignmentBuildingEntities;
     }
 
-    public String getManagerPhone() {
-        return managerPhone;
+    public Integer getNumberOfBasement() {
+        return numberOfBasement;
     }
 
-    public void setManagerPhone(String managerPhone) {
-        this.managerPhone = managerPhone;
+    public void setNumberOfBasement(Integer numberOfBasement) {
+        this.numberOfBasement = numberOfBasement;
+    }
+
+    public Integer getFloorArea() {
+        return floorArea;
+    }
+
+    public void setFloorArea(Integer floorArea) {
+        this.floorArea = floorArea;
+    }
+
+    public void setRentPrice(Integer rentPrice) {
+        this.rentPrice = rentPrice;
     }
 
     public String getManagerName() {
@@ -275,12 +352,12 @@ public class BuildingDTO {
         this.managerName = managerName;
     }
 
-    public String getType() {
-        return type;
+    public String getManagerPhone() {
+        return managerPhone;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setManagerPhone(String managerPhone) {
+        this.managerPhone = managerPhone;
     }
 
     public String getImage() {
@@ -289,13 +366,5 @@ public class BuildingDTO {
 
     public void setImage(String image) {
         this.image = image;
-    }
-
-    public String getBase64() {
-        return base64;
-    }
-
-    public void setBase64(String base64) {
-        this.base64 = base64;
     }
 }
