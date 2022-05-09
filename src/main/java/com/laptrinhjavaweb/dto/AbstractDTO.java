@@ -15,13 +15,14 @@ public class AbstractDTO<T> implements Serializable {
     private Date modifiedDate;
     private String modifiedBy;
     private int maxPageItems = 10;
-    private int page = 1;
+    private int page =1;
     private List<T> listResult = new ArrayList<>();
-    private int totalItems = 0;
+    private int totalItems ;
     private String tableId = "tableList";
     private Integer limit;
     private Integer totalPage;
     private Integer totalItem;
+    private String searchValue;
 
     public Long getId() {
         return id;
@@ -75,11 +76,11 @@ public class AbstractDTO<T> implements Serializable {
         this.maxPageItems = maxPageItems;
     }
 
-    public int getPage() {
+    public Integer getPage() {
         return page;
     }
 
-    public void setPage(int page) {
+    public void setPage(Integer page) {
         this.page = page;
     }
 
@@ -130,4 +131,14 @@ public class AbstractDTO<T> implements Serializable {
     public void setTotalItem(Integer totalItem) {
         this.totalItem = totalItem;
     }
+
+    public String getSearchValue() {
+        return searchValue;
+    }
+
+    public void setSearchValue(String searchValue) {
+        this.searchValue = searchValue;
+    }
+
+
 }

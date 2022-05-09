@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@include file="/common/taglib.jsp" %>
-<c:url var="buildingApiUrl" value="/api/buildings"/>
+<c:url var="buildingApiUrl" value="/api/building"/>
 
 <c:url var="buildingEditURL" value="/admin/building-edit"/>
 <html>
@@ -131,10 +131,12 @@
                         <label class="col-sm-3 control-label no-padding-right"
                                for="district">Quận</label>
                         <div class="col-sm-9">
-                            <select id="district" name="district" class="form-control">
-                                <option value="" selected>Choose...</option>
-                                <c:forEach var="item" items="${districtsEnums}">
-                                    <option value="${item.key}" ${item.key == building.district ? 'selected' : '' }> ${item.value}</option>
+                            <select class="col-sm-6 form-control" id="district" name="district">
+                                <option value="">--Chọn quận--</option>
+                                <c:forEach items="${districtEnums}" var="item">
+                                    <option value="${item.key}" ${item.key == modelSearch.district ? 'selected' : '' }>
+                                            ${item.value}
+                                    </option>
                                 </c:forEach>
 
                             </select>
@@ -460,56 +462,31 @@
     </div>
 </div>
 <script>
-    $("#btnAddBuilding").click(function (event) {
-        event.preventDefault();
-        var rentTypes = [];
-        var formData = $("#formEdit").serializeArray();
-        $.each(formData, function (i, v) {
-            if (v.name == 'rentTypes') {
-                rentTypes.push(v.value)
-            } else {
-                data["" + v.name + ""] = v.value;
-            }
-
+    $('#btnAddBuilding').click(function(e) {
+        e.preventDefault();
+        var data = {};
+        var buildingTypes = [];
+        var formData = $('#formEdit').serializeArray();
+        $.each(formData, function (index, v) {
+            data[""+v.name+""] = v.value;
         });
-        data['rentTypes'] = rentTypes;
-        if (data['id'] != '' || data['id'] > 0) {
-            editBuilding(data);
-        } else {
-            addBuilding(data);
-        }
-    });
-    function addBuilding(data) {
+        data['buildingTypes'] = buildingTypes;
         $.ajax({
-            url: '${buildingApiUrl}',
             type: 'POST',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            success: function (res) {
-                swal("Thành công", "Sản phẩm đã được lưa", "success");
-            },
-            error: function (res) {
-                swal("Chưa Thực Hiện Xóa", "Dữ liệu chưa được lưu", "error");
-            }
-        });
-    }
-
-    function editBuilding(data) {
-        $.ajax({
             url: '${buildingApiUrl}',
-            type: 'PUT',
-            dataType: 'json',
-            contentType: 'application/json',
             data: JSON.stringify(data),
-            success: function (res) {
-                swal("Thành công", "Sản phẩm đã được cập nhật", "success");
+            dataType: "json",
+            contentType: "application/json",
+            success: function (response) {
+                console.log('Success')
+                console.log(response)
             },
-            error: function (res) {
-                swal("Chưa Thực Hiện Xóa", "Dữ liệu chưa được cập nhật", "error");
+            error: function (response) {
+                console.log('Failed'),
+                    console.log(response)
             }
-        });
-    }
+        })
+    })
 </script>
 </body>
 </html>

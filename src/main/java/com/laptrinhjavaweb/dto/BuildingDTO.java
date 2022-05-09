@@ -1,7 +1,7 @@
 package com.laptrinhjavaweb.dto;
 
 public class BuildingDTO {
-    private Integer id;
+    private Long id;
     private String brokerAgeFee;
     private String carFee;
     private String decorationTime;
@@ -34,12 +34,16 @@ public class BuildingDTO {
     private String type;
     private String image;
     private String base64;
+    private String areaFrom;
+    private String areaTo;
+    private String rentPriceFrom;
+    private String rentPriceTo;
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -254,6 +258,38 @@ public class BuildingDTO {
     public String getAreaRent() {
         return areaRent;
     }
+    public String getAreaFrom() {
+        return areaFrom;
+    }
+
+    public void setAreaFrom(String areaFrom) {
+        this.areaFrom = areaFrom;
+    }
+
+    public String getAreaTo() {
+        return areaTo;
+    }
+
+    public void setAreaTo(String areaTo) {
+        this.areaTo = areaTo;
+    }
+
+    public String getRentPriceFrom() {
+        return rentPriceFrom;
+    }
+
+    public void setRentPriceFrom(String rentPriceFrom) {
+        this.rentPriceFrom = rentPriceFrom;
+    }
+
+    public String getRentPriceTo() {
+        return rentPriceTo;
+    }
+
+    public void setRentPriceTo(String rentPriceTo) {
+        this.rentPriceTo = rentPriceTo;
+    }
+
 
     public void setAreaRent(String areaRent) {
         this.areaRent = areaRent;

@@ -3,19 +3,32 @@ package com.laptrinhjavaweb.api.admin;
 import com.laptrinhjavaweb.dto.BuildingDTO;
 import com.laptrinhjavaweb.service.impl.BuildingServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-@RestController(value = "newAPIOfAdmin")
+@RestController(value = "buildingAPIOfAdmin")
 public class BuildingAPI {
 
     @Autowired
     private BuildingServiceImpl buildingService;
 
+    @GetMapping("/api/building")
+    public BuildingDTO showBuilding(@RequestBody BuildingDTO buildingDTO)  {
+
+        return buildingDTO;
+    }
     @PostMapping("/api/building")
-    public BuildingDTO createBuilding(@RequestBody BuildingDTO buildingDTO){
+    public BuildingDTO createBuilding(@RequestBody BuildingDTO buildingDTO) throws Exception {
+        buildingService.getDisTricts();
         buildingService.save(buildingDTO);
+        return buildingDTO;
+    }
+    @DeleteMapping("/api/building/{id}")
+    public void deleteBuilding(@PathVariable("id") Long id)  {
+        buildingService.delete(id);
+    }
+    @PutMapping("/api/building/{id}")
+    public BuildingDTO updateBuilding(@PathVariable("id") Long id, @RequestBody BuildingDTO buildingDTO)  {
+        buildingService.updateBuilding(buildingDTO,id);
         return buildingDTO;
     }
 }
