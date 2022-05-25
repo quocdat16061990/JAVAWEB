@@ -27,17 +27,18 @@ public class BuildingDTO {
     private String structure;
     private String ward;
     private String waterFee;
-    private String[] rentTypes;
-    private String areaRent;
+    private String [] rentTypes = new String[]{};
+    private Integer areaRent;
+    private Integer areaRentFrom;
+    private String staffId;
+    private Integer areaRentTo;
     private String managerPhone;
     private String managerName;
-    private String type;
+    private String [] type = new String[]{};
     private String image;
     private String base64;
-    private String areaFrom;
-    private String areaTo;
-    private String rentPriceFrom;
-    private String rentPriceTo;
+    private Integer rentPriceFrom;
+    private Integer rentPriceTo;
 
     public Long getId() {
         return id;
@@ -255,45 +256,7 @@ public class BuildingDTO {
         this.rentTypes = rentTypes;
     }
 
-    public String getAreaRent() {
-        return areaRent;
-    }
-    public String getAreaFrom() {
-        return areaFrom;
-    }
 
-    public void setAreaFrom(String areaFrom) {
-        this.areaFrom = areaFrom;
-    }
-
-    public String getAreaTo() {
-        return areaTo;
-    }
-
-    public void setAreaTo(String areaTo) {
-        this.areaTo = areaTo;
-    }
-
-    public String getRentPriceFrom() {
-        return rentPriceFrom;
-    }
-
-    public void setRentPriceFrom(String rentPriceFrom) {
-        this.rentPriceFrom = rentPriceFrom;
-    }
-
-    public String getRentPriceTo() {
-        return rentPriceTo;
-    }
-
-    public void setRentPriceTo(String rentPriceTo) {
-        this.rentPriceTo = rentPriceTo;
-    }
-
-
-    public void setAreaRent(String areaRent) {
-        this.areaRent = areaRent;
-    }
 
     public String getManagerPhone() {
         return managerPhone;
@@ -311,11 +274,11 @@ public class BuildingDTO {
         this.managerName = managerName;
     }
 
-    public String getType() {
+    public String[] getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(String[] type) {
         this.type = type;
     }
 
@@ -333,5 +296,53 @@ public class BuildingDTO {
 
     public void setBase64(String base64) {
         this.base64 = base64;
+    }
+
+    public Integer getAreaRent() {
+        return areaRent;
+    }
+
+    public void setAreaRent(Integer areaRent) {
+        this.areaRent = areaRent;
+    }
+
+    public Integer getAreaRentFrom() {
+        return areaRentFrom;
+    }
+
+    public void setAreaRentFrom(Integer areaRentFrom) {
+        this.areaRentFrom = areaRentFrom;
+    }
+
+    public String getStaffId() {
+        return staffId;
+    }
+
+    public void setStaffId(String staffId) {
+        this.staffId = staffId;
+    }
+
+    public Integer getAreaRentTo() {
+        return areaRentTo;
+    }
+
+    public void setAreaRentTo(Integer areaRentTo) {
+        this.areaRentTo = areaRentTo;
+    }
+
+    public Integer getRentPriceFrom() {
+        return rentPriceFrom;
+    }
+
+    public void setRentPriceFrom(Integer rentPriceFrom) {
+        this.rentPriceFrom = rentPriceFrom;
+    }
+
+    public Integer getRentPriceTo() {
+        return rentPriceTo;
+    }
+
+    public void setRentPriceTo(Integer rentPriceTo) {
+        this.rentPriceTo = rentPriceTo;
     }
 }
