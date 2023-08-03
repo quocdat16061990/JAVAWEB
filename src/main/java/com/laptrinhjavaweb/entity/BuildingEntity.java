@@ -22,6 +22,12 @@ public class BuildingEntity extends  BaseEntity{
 
     @Column(name = "deposit")
     private String deposit;
+     @Column(name = "card")
+    private String card;
+
+     @Column(name = "transaction")
+    private String transaction;
+
 
     @Column(name = "direcion")
     private String direction;
