@@ -2,145 +2,134 @@ package com.laptrinhjavaweb.repository.custom;
 
 import com.laptrinhjavaweb.dto.BuildingDTO;
 import com.laptrinhjavaweb.entity.BuildingEntity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
-public class BuildingRepositoryCustomImpl implements BuildingRepositoryCustom{
+public class BuildingRepositoryCustomImpl implements BuildingRepositoryCustom {
 
     @Autowired
     private EntityManager entityManager;
 
     @Override
     public List<BuildingEntity> findAll(BuildingDTO model) {
-        StringBuilder sql = buildBuildingSearch(model);
-        Query query = entityManager.createNativeQuery(String.valueOf(sql),BuildingEntity.class);
-        return query.getResultList();
+        return findAll(model, Pageable.unpaged()).getContent();
     }
 
-    private StringBuilder buildBuildingSearch(BuildingDTO model) {
-        StringBuilder sql = new StringBuilder("select * from building as b ");
-        StringBuilder sqlName = new StringBuilder();
-        StringBuilder sqlStaff = new StringBuilder();
-        StringBuilder sqlStaffId = new StringBuilder();
-        StringBuilder sqlFloorArea = new StringBuilder();
-        StringBuilder sqlNumberOfBasement = new StringBuilder();
-        StringBuilder sqlDistrict = new StringBuilder();
-        StringBuilder sqlWard = new StringBuilder();
-        StringBuilder sqlStreet = new StringBuilder();
-        StringBuilder sqlRentArea = new StringBuilder();
-        StringBuilder sqlDirection = new StringBuilder();
-        StringBuilder sqlLevel = new StringBuilder();
-        StringBuilder sqlManagerName = new StringBuilder();
-        StringBuilder sqlManagerPhone = new StringBuilder();
-        StringBuilder sqlRentPrice = new StringBuilder();
-        StringBuilder sqlTyle = new StringBuilder();
+    @Override
+    public Page<BuildingEntity> findAll(BuildingDTO model, Pageable pageable) {
+        String fromAndWhere = buildFromAndWhere(model);
+        Query selectQuery = entityManager.createNativeQuery(
+                "select distinct b.* " + fromAndWhere + " order by b.id desc",
+                BuildingEntity.class
+        );
 
-        if(model.getName() != null && !model.getName().isEmpty()){
-            sqlName.append(" and b.name like '%" + model.getName() + "%' ");
+        if (pageable.isPaged()) {
+            selectQuery.setFirstResult((int) pageable.getOffset());
+            selectQuery.setMaxResults(pageable.getPageSize());
         }
+
+        @SuppressWarnings("unchecked")
+        List<BuildingEntity> entities = selectQuery.getResultList();
+
+        Query countQuery = entityManager.createNativeQuery("select count(distinct b.id) " + fromAndWhere);
+        Number total = (Number) countQuery.getSingleResult();
+
+        return new PageImpl<>(entities, pageable, total.longValue());
+    }
+
+    private String buildFromAndWhere(BuildingDTO model) {
+        StringBuilder from = new StringBuilder(" from building as b ");
+        StringBuilder where = new StringBuilder(" where 1=1 ");
+
         if (model.getStaffId() != null && !model.getStaffId().isEmpty()) {
-            sqlStaff.append("left join assignmentbuilding ab on ab.buildingid = b.id");
-            sqlStaffId.append(" and ab.staffid =" + model.getStaffId());
+            from.append(" left join assignmentbuilding ab on ab.buildingid = b.id ");
+            where.append(" and ab.staffid = ").append(model.getStaffId());
+        }
+        if (model.getName() != null && !model.getName().isEmpty()) {
+            where.append(" and b.name like '%").append(model.getName()).append("%' ");
         }
         if (model.getFloorArea() != null) {
-            sqlFloorArea.append(" and b.floorarea = " + model.getFloorArea());
+            where.append(" and b.floorarea = ").append(model.getFloorArea());
         }
         if (model.getDistrict() != null && !model.getDistrict().isEmpty()) {
-            sqlDistrict.append(" and b.district like '%" + model.getDistrict() + "%'");
+            where.append(" and b.district like '%").append(model.getDistrict()).append("%'");
         }
         if (model.getWard() != null && !model.getWard().isEmpty()) {
-            sqlWard.append(" and b.ward like '%" + model.getWard() + "%'");
+            where.append(" and b.ward like '%").append(model.getWard()).append("%'");
         }
-        if(model.getStreet() !=null && !model.getStreet().isEmpty()){
-            sqlStreet.append(" and b.street like '%" + model.getStreet() + "%'");
+        if (model.getStreet() != null && !model.getStreet().isEmpty()) {
+            where.append(" and b.street like '%").append(model.getStreet()).append("%'");
         }
         if (model.getNumberOfBasement() != null) {
-            sqlNumberOfBasement.append(" and b.numberofbasement = " + model.getNumberOfBasement());
+            where.append(" and b.numberofbasement = ").append(model.getNumberOfBasement());
         }
-        if(model.getDirection() != null && !model.getDirection().isEmpty()){
-            sqlDirection.append(" and b.direcion like '%" + model.getDirection()+ "%'");
+        if (model.getDirection() != null && !model.getDirection().isEmpty()) {
+            where.append(" and b.direcion like '%").append(model.getDirection()).append("%'");
         }
-        if(model.getLevel() != null && !model.getLevel().isEmpty()){
-            sqlLevel.append(" and b.level = " + model.getLevel());
+        if (model.getLevel() != null && !model.getLevel().isEmpty()) {
+            where.append(" and b.level = ").append(model.getLevel());
         }
-        if(model.getManagerName() != null && !model.getManagerName().isEmpty() ){
-            sqlManagerName.append(" and b.managerName like '%" + model.getManagerName() +"%'");
+        if (model.getManagerName() != null && !model.getManagerName().isEmpty()) {
+            where.append(" and b.managername like '%").append(model.getManagerName()).append("%'");
         }
-        if(model.getManagerPhone() != null && !model.getManagerPhone().isEmpty() ){
-            sqlManagerPhone.append(" and b.managerPhone = " + model.getManagerPhone());
+        if (model.getManagerPhone() != null && !model.getManagerPhone().isEmpty()) {
+            where.append(" and b.managerphone = ").append(model.getManagerPhone());
         }
         if (model.getAreaRentFrom() != null || model.getAreaRentTo() != null) {
-            sqlRentArea.append(checkRentArea(model));
+            where.append(buildRentAreaCondition(model));
         }
-        if (model.getRentPriceFrom() != null || model.getAreaRentTo() != null) {
-            sqlRentPrice.append(checkRentPrice(model));
+        if (model.getRentPriceFrom() != null || model.getRentPriceTo() != null) {
+            where.append(buildRentPriceCondition(model));
         }
-        if (model.getRentTypes()!=null && model.getRentTypes().length > 0) {
-            sqlTyle.append(checkType(model));
+        if (model.getRentTypes() != null && model.getRentTypes().length > 0) {
+            where.append(buildTypeCondition(model));
         }
 
-        sql.append(sqlStaff + " where 1=1 " + sqlName + " " + sqlStaffId + " " + sqlFloorArea + " "
-                + sqlDistrict + " " + sqlWard + " " + sqlStreet + " " + sqlNumberOfBasement + " "
-                + sqlDirection + " " + sqlLevel + " " + sqlManagerName + " " + sqlManagerPhone + " "
-                + sqlRentArea + " " + sqlRentPrice + " " + sqlTyle
-                + " group by b.id");
-
-        //Remove multiple spaces to one space in string.
-        String sqlTemp = sql.toString();
-        sqlTemp = sqlTemp.replaceAll("\\s+", " ");
-        StringBuilder sqlResult = new StringBuilder(sqlTemp);
-
-        return sqlResult;
+        return (from.toString() + where).replaceAll("\\s+", " ");
     }
 
-    private String checkRentPrice(BuildingDTO model) {
-        String sqlRentPrice = "";
-
+    private String buildRentPriceCondition(BuildingDTO model) {
+        StringBuilder condition = new StringBuilder();
         if (model.getRentPriceFrom() != null && model.getRentPriceTo() != null) {
-            sqlRentPrice = " and b.rentprice >= " + model.getRentPriceFrom() + "  and b.rentprice <= "
-                    + model.getRentPriceTo();
+            condition.append(" and b.rentprice >= ").append(model.getRentPriceFrom())
+                    .append(" and b.rentprice <= ").append(model.getRentPriceTo());
         } else if (model.getRentPriceFrom() != null) {
-            sqlRentPrice = " and b.rentprice >= " + model.getRentPriceFrom();
+            condition.append(" and b.rentprice >= ").append(model.getRentPriceFrom());
         } else if (model.getRentPriceTo() != null) {
-            sqlRentPrice = " and b.rentprice <= " + model.getRentPriceTo();
+            condition.append(" and b.rentprice <= ").append(model.getRentPriceTo());
         }
-
-        return sqlRentPrice;
+        return condition.toString();
     }
 
-
-    private StringBuilder checkRentArea(BuildingDTO model) {
-        StringBuilder sqlRentArea = new StringBuilder();
-        if(model.getAreaRentFrom() !=null || model.getAreaRentTo() !=null){
-            sqlRentArea.append(" AND EXISTS (select * from rentarea AS ra where ra.buildingid = b.id");
-            if(model.getAreaRentFrom() !=null){
-                sqlRentArea.append(" AND "+ model.getAreaRentFrom() +" <= ra.value");
-            }
-            if(model.getAreaRentTo() !=null){
-                sqlRentArea.append(" AND  ra.value <= "+ model.getAreaRentTo() +"");
-            }
-            sqlRentArea.append(")");
+    private String buildRentAreaCondition(BuildingDTO model) {
+        StringBuilder condition = new StringBuilder(" and exists (select * from rentarea as ra where ra.buildingid = b.id");
+        if (model.getAreaRentFrom() != null) {
+            condition.append(" and ").append(model.getAreaRentFrom()).append(" <= ra.value");
         }
-        return sqlRentArea;
+        if (model.getAreaRentTo() != null) {
+            condition.append(" and ra.value <= ").append(model.getAreaRentTo());
+        }
+        condition.append(")");
+        return condition.toString();
     }
-    private String checkType(BuildingDTO model) {
-        String sqlTyle = "", sqlTyles = "";
+
+    private String buildTypeCondition(BuildingDTO model) {
+        StringBuilder condition = new StringBuilder(" and (");
         for (int i = 0; i < model.getRentTypes().length; i++) {
-            if (i < (model.getRentTypes().length - 1)) {
-                sqlTyles += "or b.type like '%" + model.getRentTypes()[i] + "%' ";
-            } else {
-                sqlTyle = " and (b.type like '%" + model.getRentTypes()[i] + "%' " + sqlTyles + ")";
+            if (i > 0) {
+                condition.append(" or ");
             }
+            condition.append(" b.type like '%").append(model.getRentTypes()[i]).append("%' ");
         }
-
-        return sqlTyle;
+        condition.append(")");
+        return condition.toString();
     }
-
 }

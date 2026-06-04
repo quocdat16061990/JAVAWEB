@@ -1,7 +1,8 @@
 package com.laptrinhjavaweb.service;
 
 import com.laptrinhjavaweb.dto.BuildingDTO;
-import com.laptrinhjavaweb.entity.BuildingEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
@@ -14,4 +15,6 @@ public interface IBuildingService {
      void updateBuilding(BuildingDTO buildingDTO , Long id);
 
      List<BuildingDTO> findAll(BuildingDTO model);
+     Page<BuildingDTO> findAll(BuildingDTO model, Pageable pageable);
+     BuildingDTO findById(Long id);
      }

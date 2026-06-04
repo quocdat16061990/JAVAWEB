@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${appName}">Website quản lý bất động sản</title>
+    <link rel="stylesheet" th:href="@{/web-app/css/site.css}">
+</head>
+<body>
+<div class="shell">
+    <nav class="topbar">
+        <a class="brand" th:href="${webHomeUrl}" th:text="${appName}">Website quản lý bất động sản</a>
+        <div class="nav-links">
+            <a th:href="${webBuildingsUrl}">Tòa nhà</a>
+            <a th:href="${webLoginUrl}">Đăng nhập JWT</a>
+            <a th:href="${webDocsUrl}">Tài liệu API</a>
+        </div>
+    </nav>
+
+    <header class="hero hero-home">
+        <div class="hero-copy">
+            <p class="eyebrow">Bản web test nội bộ</p>
+            <h1>Kiểm thử nhanh toàn bộ luồng quản lý tòa nhà trên giao diện đẹp và dễ dùng</h1>
+            <p class="lead">
+                Website này dùng Thymeleaf để nối trực tiếp với backend hiện tại. Bạn có thể đăng nhập lấy JWT,
+                xem tài liệu API, tìm kiếm tòa nhà, cập nhật thông tin và gán nhân viên phụ trách ngay trên web.
+            </p>
+            <div class="button-row">
+                <a class="button button-primary" th:href="${webBuildingsUrl}">Vào quản lý tòa nhà</a>
+                <a class="button button-secondary" th:href="${webLoginUrl}">Lấy JWT</a>
+                <a class="button button-secondary" th:href="${webDocsUrl}">Mở tài liệu API</a>
+            </div>
+        </div>
+        <div class="hero-panel">
+            <h2>Luồng test gợi ý</h2>
+            <ol class="guide-list">
+                <li>Đăng nhập ở trang JWT để lấy token.</li>
+                <li>Mở tài liệu API và dùng nút Authorize để test endpoint.</li>
+                <li>Vào danh sách tòa nhà để lọc, sửa hoặc gán nhân viên.</li>
+            </ol>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <strong>JWT</strong>
+                    <span>Đăng nhập nhanh</span>
+                </div>
+                <div class="stat-card">
+                    <strong>CRUD</strong>
+                    <span>Tạo và cập nhật tòa nhà</span>
+                </div>
+                <div class="stat-card">
+                    <strong>Phân công</strong>
+                    <span>Gán nhân viên theo tòa nhà</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="grid two-up">
+        <article class="card feature-card">
+            <h2>Thông tin truy cập</h2>
+            <p>Tên đăng nhập mẫu: <code>admin</code></p>
+            <p>Mật khẩu mẫu: <code>123456</code></p>
+            <p>Swagger UI: <code th:text="${swaggerUiUrl}"></code></p>
+        </article>
+        <article class="card feature-card">
+            <h2>Liên kết nhanh</h2>
+            <ul class="link-list">
+                <li><a th:href="${webBuildingsUrl}">Quản lý tòa nhà</a></li>
+                <li><a th:href="${swaggerUiUrl}" target="_blank" rel="noreferrer">Swagger UI</a></li>
+                <li><a th:href="${openApiJsonUrl}" target="_blank" rel="noreferrer">OpenAPI JSON</a></li>
+                <li><a th:href="${loginUrl}" target="_blank" rel="noreferrer">API đăng nhập</a></li>
+            </ul>
+        </article>
+    </section>
+</div>
+</body>
+</html>

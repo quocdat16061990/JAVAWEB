@@ -33,23 +33,30 @@ public class AssignmentBuildingServiceImpl implements AssignmentBuildingService 
 
     @Override
     public List<AssigmentBuildingDTO> save(AssigmentBuildingDTO assignmentBuildingDTO) {
-        List<Long> listStaffsId = new ArrayList<>(Arrays.asList(assignmentBuildingDTO.getStaffs()));
-        List<AssignmentBuildingEntity> assignmentBuildingEntities = assignmentBuildingRepository.findByBuildingEntity(buildingRepository.findOne(assignmentBuildingDTO.getBuildingId()));
-        BuildingEntity buildingEntity = buildingRepository.findOne(assignmentBuildingDTO.getBuildingId());
+        BuildingEntity buildingEntity = buildingRepository.findById(assignmentBuildingDTO.getBuildingId())
+                .orElseThrow(() -> new RuntimeException("Building not found with id: " + assignmentBuildingDTO.getBuildingId()));
+        List<AssignmentBuildingEntity> assignmentBuildingEntities = assignmentBuildingRepository.findByBuildingEntity(buildingEntity);
         List<AssigmentBuildingDTO> list = new ArrayList<>();
-        for (Long item: listStaffsId) {
-            UserEntity userEntity = userRepository.findOne(item);
-            AssignmentBuildingEntity assignmentBuildingEntity = new AssignmentBuildingEntity();
-            assignmentBuildingEntity.setBuildingEntity(buildingEntity);
-            assignmentBuildingEntity.setUserEntity(userEntity);
-            //save
-            assignmentBuildingEntity = assignmentBuildingRepository.save(assignmentBuildingEntity);
-            if (assignmentBuildingEntity != null) {
-                list.add(assignmentBuildingConverter.convertToDTO(assignmentBuildingEntity));
-            }
-        }
+        List<Long> listStaffsId = assignmentBuildingDTO.getStaffs() == null
+                ? new ArrayList<>()
+                : new ArrayList<>(Arrays.asList(assignmentBuildingDTO.getStaffs()));
+
         for (AssignmentBuildingEntity assignmentBuildingEntity: assignmentBuildingEntities) {
-            assignmentBuildingRepository.delete(assignmentBuildingEntity.getId());
+            assignmentBuildingRepository.deleteById(assignmentBuildingEntity.getId());
+        }
+
+        for (Long item : listStaffsId) {
+            if (item != null) {
+                UserEntity userEntity = userRepository.findById(item)
+                        .orElseThrow(() -> new RuntimeException("User not found with id: " + item));
+                AssignmentBuildingEntity assignmentBuildingEntity = new AssignmentBuildingEntity();
+                assignmentBuildingEntity.setBuildingEntity(buildingEntity);
+                assignmentBuildingEntity.setUserEntity(userEntity);
+                assignmentBuildingEntity = assignmentBuildingRepository.save(assignmentBuildingEntity);
+                if (assignmentBuildingEntity != null) {
+                    list.add(assignmentBuildingConverter.convertToDTO(assignmentBuildingEntity));
+                }
+            }
         }
         return list;
     }

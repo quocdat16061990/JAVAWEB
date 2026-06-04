@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý tòa nhà</title>
+    <link rel="stylesheet" th:href="@{/web-app/css/site.css}">
+</head>
+<body>
+<div class="shell">
+    <nav class="topbar">
+        <a class="brand" th:href="${webHomeUrl}" th:text="${appName}">Website quản lý bất động sản</a>
+        <div class="nav-links">
+            <a th:href="${webLoginUrl}">Đăng nhập JWT</a>
+            <a th:href="${webDocsUrl}">Tài liệu API</a>
+            <a th:href="${swaggerUiUrl}" target="_blank" rel="noreferrer">Swagger UI</a>
+        </div>
+    </nav>
+
+    <section class="page-title page-banner">
+        <div>
+            <p class="eyebrow">Quản lý tòa nhà</p>
+            <h1>Danh sách lớn để test nhanh giao diện, bộ lọc và thao tác nghiệp vụ</h1>
+            <p class="lead small">
+                Dữ liệu được seed khoảng 4000 bản ghi để bạn kiểm tra bảng, tìm kiếm và thao tác chỉnh sửa ngay trên modal.
+            </p>
+        </div>
+        <div class="button-row banner-actions">
+            <button type="button"
+                    class="button button-primary"
+                    data-open-modal="building-modal"
+                    data-modal-mode="create">
+                Tạo tòa nhà
+            </button>
+            <a class="button button-secondary" th:href="${webBuildingsUrl}" data-ajax-nav="true">Làm mới danh sách</a>
+        </div>
+    </section>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+    <section class="grid dashboard-grid compact-dashboard">
+        <article class="card">
+            <h2>Bộ lọc tìm kiếm</h2>
+            <form id="buildingSearchForm" class="form-grid compact-form" method="get" th:action="${webBuildingsUrl}">
+                <input type="hidden" name="size" th:value="${pageSize}">
+                <div class="grid form-two-col">
+                    <label>
+                        Tên tòa nhà
+                        <input type="text" name="name" th:value="${searchForm.name}">
+                    </label>
+                    <label>
+                        Quận
+                        <select name="district">
+                            <option value="">Tất cả quận</option>
+                            <option th:each="district : ${districtOptions}"
+                                    th:value="${district.key}"
+                                    th:text="${district.value}"
+                                    th:selected="${district.key == searchForm.district}"></option>
+                        </select>
+                    </label>
+                    <label>
+                        Phường
+                        <input type="text" name="ward" th:value="${searchForm.ward}">
+                    </label>
+                    <label>
+                        Đường
+                        <input type="text" name="street" th:value="${searchForm.street}">
+                    </label>
+                    <label>
+                        Giá thuê từ
+                        <input type="number" name="rentPriceFrom" th:value="${searchForm.rentPriceFrom}">
+                    </label>
+                    <label>
+                        Giá thuê đến
+                        <input type="number" name="rentPriceTo" th:value="${searchForm.rentPriceTo}">
+                    </label>
+                    <label>
+                        Diện tích thuê từ
+                        <input type="number" name="areaRentFrom" th:value="${searchForm.areaRentFrom}">
+                    </label>
+                    <label>
+                        Diện tích thuê đến
+                        <input type="number" name="areaRentTo" th:value="${searchForm.areaRentTo}">
+                    </label>
+                </div>
+
+                <fieldset class="checkbox-group compact-checkbox-group">
+                    <legend>Loại hình thuê</legend>
+                    <div class="chip-grid">
+                        <label class="check-item chip-item" th:each="rentType : ${rentTypeOptions}">
+                            <input type="checkbox"
+                                   name="rentTypes"
+                                   th:value="${rentType.key}"
+                                   th:checked="${searchForm.rentTypes != null and #arrays.contains(searchForm.rentTypes, rentType.key)}">
+                            <span th:text="${rentType.value}"></span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <div class="button-row">
+                    <button class="button button-primary" type="submit">Tìm kiếm</button>
+                    <a class="button button-secondary" th:href="${webBuildingsUrl}" data-ajax-nav="true">Đặt lại</a>
+                </div>
+            </form>
+        </article>
+
+        <article id="building-summary" class="card action-card">
+            <h2>Thao tác nhanh</h2>
+            <div class="action-card-block">
+                <strong class="metric-number" th:text="${totalElements}">0</strong>
+                <span class="metric-label">tổng số bản ghi phù hợp</span>
+            </div>
+            <p class="lead small">
+                Đang xem trang <strong th:text="${currentPage}">1</strong>
+                / <strong th:text="${totalPages == 0 ? 1 : totalPages}">1</strong>.
+                Dùng nút <strong>Tạo tòa nhà</strong> hoặc <strong>Chỉnh sửa</strong> trong bảng để mở modal thao tác ngay trên trang này.
+            </p>
+            <div class="button-row">
+                <button type="button"
+                        class="button button-primary"
+                        data-open-modal="building-modal"
+                        data-modal-mode="create">
+                    Tạo mới
+                </button>
+                <a class="button button-secondary" th:href="${webDocsUrl}">Mở tài liệu API</a>
+            </div>
+        </article>
+    </section>
+
+    <section id="building-table-section" class="card table-card">
+        <div class="table-header">
+            <div>
+                <h2>Danh sách tòa nhà</h2>
+                <p>
+                    Hiển thị
+                    <strong th:text="${pageSize}">20</strong>
+                    bản ghi trên mỗi trang.
+                    Ấn chỉnh sửa để mở modal, ấn gán nhân viên để quản lý phân công riêng.
+                </p>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>Mã</th>
+                    <th>Tòa nhà</th>
+                    <th>Địa chỉ</th>
+                    <th>Quận</th>
+                    <th>Giá thuê</th>
+                    <th>Quản lý</th>
+                    <th>Loại hình</th>
+                    <th>Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(buildings)}">
+                    <td colspan="8" class="empty-state">Chưa có dữ liệu phù hợp với bộ lọc hiện tại.</td>
+                </tr>
+                <tr th:each="building : ${buildings}">
+                    <td th:text="${building.id}"></td>
+                    <td>
+                        <strong th:text="${building.name}"></strong>
+                        <div class="table-subtext" th:text="${building.managerPhone}"></div>
+                    </td>
+                    <td>
+                        <span th:text="${building.street != null ? building.street : ''}"></span>
+                        <span th:if="${building.ward != null and !building.ward.isEmpty()}" th:text="${', ' + building.ward}"></span>
+                    </td>
+                    <td th:text="${districtOptions[building.district] ?: building.district}"></td>
+                    <td th:text="${building.rentPrice != null ? #numbers.formatInteger(building.rentPrice, 0, 'COMMA') + ' đ' : 'Chưa cập nhật'}"></td>
+                    <td>
+                        <strong th:text="${building.managerName != null ? building.managerName : 'Chưa cập nhật'}"></strong>
+                        <div class="table-subtext" th:text="${building.managerPhone != null ? building.managerPhone : ''}"></div>
+                    </td>
+                    <td>
+                        <div class="tag-list" th:if="${building.rentTypes != null and building.rentTypes.length > 0}">
+                            <span class="tag" th:each="rentType : ${building.rentTypes}" th:text="${rentTypeOptions[rentType] ?: rentType}"></span>
+                        </div>
+                        <span th:if="${building.rentTypes == null or building.rentTypes.length == 0}" class="table-subtext">Chưa chọn</span>
+                    </td>
+                    <td>
+                        <div class="action-stack">
+                            <button type="button"
+                                    class="button button-secondary button-small"
+                                    data-open-modal="building-modal"
+                                    data-modal-mode="edit"
+                                    th:attr="data-id=${building.id},
+                                             data-name=${building.name},
+                                             data-district=${building.district},
+                                             data-ward=${building.ward},
+                                             data-street=${building.street},
+                                             data-floor-area=${building.floorArea},
+                                             data-number-of-basement=${building.numberOfBasement},
+                                             data-rent-price=${building.rentPrice},
+                                             data-manager-name=${building.managerName},
+                                             data-manager-phone=${building.managerPhone},
+                                             data-direction=${building.direction},
+                                             data-note=${building.note},
+                                             data-rent-types=${building.rentTypes != null ? #strings.arrayJoin(building.rentTypes, ',') : ''}">
+                                Chỉnh sửa
+                            </button>
+                            <a class="button button-secondary button-small" th:href="@{/web/toa-nha/{id}/nhan-vien(id=${building.id})}">Gán nhân viên</a>
+                            <form th:action="@{/web/toa-nha/{id}/xoa(id=${building.id})}" method="post">
+                                <button class="button button-danger button-small" type="submit">Xóa</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-bar" th:if="${totalPages > 1}">
+            <a class="page-pill"
+               data-ajax-nav="true"
+               th:classappend="${currentPage == 1} ? ' disabled'"
+               th:href="${currentPage == 1} ? '#' : @{/web/toa-nha(
+                    page=${currentPage - 1},
+                    size=${pageSize},
+                    name=${searchForm.name},
+                    district=${searchForm.district},
+                    ward=${searchForm.ward},
+                    street=${searchForm.street},
+                    rentPriceFrom=${searchForm.rentPriceFrom},
+                    rentPriceTo=${searchForm.rentPriceTo},
+                    areaRentFrom=${searchForm.areaRentFrom},
+                    areaRentTo=${searchForm.areaRentTo},
+                    rentTypes=${searchForm.rentTypes}
+               )}">
+                Trước
+            </a>
+
+            <div class="page-cluster">
+                <div class="page-list">
+                    <th:block th:each="pageNumber : ${pageNumbers}">
+                        <span class="page-pill page-gap" th:if="${pageNumber == null}">...</span>
+                        <a class="page-pill"
+                           data-ajax-nav="true"
+                           th:if="${pageNumber != null}"
+                           th:text="${pageNumber}"
+                           th:classappend="${pageNumber == currentPage} ? ' is-active'"
+                           th:href="@{/web/toa-nha(
+                                page=${pageNumber},
+                                size=${pageSize},
+                                name=${searchForm.name},
+                                district=${searchForm.district},
+                                ward=${searchForm.ward},
+                                street=${searchForm.street},
+                                rentPriceFrom=${searchForm.rentPriceFrom},
+                                rentPriceTo=${searchForm.rentPriceTo},
+                                areaRentFrom=${searchForm.areaRentFrom},
+                                areaRentTo=${searchForm.areaRentTo},
+                                rentTypes=${searchForm.rentTypes}
+                           )}">
+                        </a>
+                    </th:block>
+                </div>
+
+                <form class="page-jump-form" method="get" th:action="${webBuildingsUrl}">
+                    <input type="hidden" name="size" th:value="${pageSize}">
+                    <input type="hidden" name="name" th:value="${searchForm.name}">
+                    <input type="hidden" name="district" th:value="${searchForm.district}">
+                    <input type="hidden" name="ward" th:value="${searchForm.ward}">
+                    <input type="hidden" name="street" th:value="${searchForm.street}">
+                    <input type="hidden" name="rentPriceFrom" th:value="${searchForm.rentPriceFrom}">
+                    <input type="hidden" name="rentPriceTo" th:value="${searchForm.rentPriceTo}">
+                    <input type="hidden" name="areaRentFrom" th:value="${searchForm.areaRentFrom}">
+                    <input type="hidden" name="areaRentTo" th:value="${searchForm.areaRentTo}">
+                    <input type="hidden"
+                           name="rentTypes"
+                           th:each="rentType : ${searchForm.rentTypes}"
+                           th:value="${rentType}">
+                    <span class="page-jump-label">Đến trang</span>
+                    <input id="pageJump"
+                           class="page-jump-input"
+                           type="number"
+                           name="page"
+                           min="1"
+                           th:max="${totalPages}"
+                           th:value="${currentPage}">
+                    <button class="button button-secondary button-small" type="submit">Đi</button>
+                </form>
+            </div>
+
+            <a class="page-pill"
+               data-ajax-nav="true"
+               th:classappend="${currentPage == totalPages} ? ' disabled'"
+               th:href="${currentPage == totalPages} ? '#' : @{/web/toa-nha(
+                    page=${currentPage + 1},
+                    size=${pageSize},
+                    name=${searchForm.name},
+                    district=${searchForm.district},
+                    ward=${searchForm.ward},
+                    street=${searchForm.street},
+                    rentPriceFrom=${searchForm.rentPriceFrom},
+                    rentPriceTo=${searchForm.rentPriceTo},
+                    areaRentFrom=${searchForm.areaRentFrom},
+                    areaRentTo=${searchForm.areaRentTo},
+                    rentTypes=${searchForm.rentTypes}
+               )}">
+                Sau
+            </a>
+        </div>
+    </section>
+</div>
+
+<section id="building-modal" class="modal-root" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="building-modal-title">
+        <div class="modal-header">
+            <div>
+                <p class="eyebrow">Biểu mẫu tòa nhà</p>
+                <h2 id="building-modal-title">Tạo tòa nhà</h2>
+                <p id="building-modal-subtitle" class="modal-subtitle">Điền thông tin rồi lưu trực tiếp vào hệ thống.</p>
+            </div>
+            <button type="button" class="modal-close" data-close-modal>Đóng</button>
+        </div>
+
+        <form id="buildingModalForm" class="form-grid compact-form" method="post" th:action="@{/web/toa-nha/tao-moi}">
+            <div class="grid form-two-col">
+                <label>
+                    Tên tòa nhà
+                    <input type="text" name="name" id="modalName" th:value="${buildingForm.name}" required>
+                </label>
+                <label>
+                    Quận
+                    <select name="district" id="modalDistrict">
+                        <option value="">Chọn quận</option>
+                        <option th:each="district : ${districtOptions}" th:value="${district.key}" th:text="${district.value}"></option>
+                    </select>
+                </label>
+                <label>
+                    Phường
+                    <input type="text" name="ward" id="modalWard" th:value="${buildingForm.ward}">
+                </label>
+                <label>
+                    Đường
+                    <input type="text" name="street" id="modalStreet" th:value="${buildingForm.street}">
+                </label>
+                <label>
+                    Diện tích sàn
+                    <input type="number" name="floorArea" id="modalFloorArea" th:value="${buildingForm.floorArea}">
+                </label>
+                <label>
+                    Số tầng hầm
+                    <input type="number" name="numberOfBasement" id="modalBasement" th:value="${buildingForm.numberOfBasement}">
+                </label>
+                <label>
+                    Giá thuê
+                    <input type="number" name="rentPrice" id="modalRentPrice" th:value="${buildingForm.rentPrice}">
+                </label>
+                <label>
+                    Người quản lý
+                    <input type="text" name="managerName" id="modalManagerName" th:value="${buildingForm.managerName}">
+                </label>
+                <label>
+                    Số điện thoại quản lý
+                    <input type="text" name="managerPhone" id="modalManagerPhone" th:value="${buildingForm.managerPhone}">
+                </label>
+                <label>
+                    Hướng
+                    <input type="text" name="direction" id="modalDirection" th:value="${buildingForm.direction}">
+                </label>
+            </div>
+
+            <label>
+                Ghi chú
+                <textarea name="note" id="modalNote" rows="4" th:text="${buildingForm.note}"></textarea>
+            </label>
+
+            <fieldset class="checkbox-group compact-checkbox-group">
+                <legend>Loại hình thuê</legend>
+                <div class="chip-grid">
+                    <label class="check-item chip-item" th:each="rentType : ${rentTypeOptions}">
+                        <input type="checkbox"
+                               name="rentTypes"
+                               th:value="${rentType.key}"
+                               th:checked="${buildingForm.rentTypes != null and #arrays.contains(buildingForm.rentTypes, rentType.key)}">
+                        <span th:text="${rentType.value}"></span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <div class="button-row modal-actions">
+                <button class="button button-primary" type="submit" id="buildingModalSubmit">Lưu tòa nhà</button>
+                <button class="button button-secondary" type="button" data-close-modal>Hủy</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<script th:inline="javascript">
+    const modalRoot = document.getElementById('building-modal');
+    const modalForm = document.getElementById('buildingModalForm');
+    const modalTitle = document.getElementById('building-modal-title');
+    const modalSubtitle = document.getElementById('building-modal-subtitle');
+    const modalSubmit = document.getElementById('buildingModalSubmit');
+
+    const createAction = /*[[@{/web/toa-nha/tao-moi}]]*/ '/web/toa-nha/tao-moi';
+    const updateActionPrefix = '/web/toa-nha/';
+    const hasCreateDraft = /*[[${errorMessage != null and buildingForm != null and buildingForm.name != null}]]*/ false;
+
+    const fields = {
+        name: document.getElementById('modalName'),
+        district: document.getElementById('modalDistrict'),
+        ward: document.getElementById('modalWard'),
+        street: document.getElementById('modalStreet'),
+        floorArea: document.getElementById('modalFloorArea'),
+        numberOfBasement: document.getElementById('modalBasement'),
+        rentPrice: document.getElementById('modalRentPrice'),
+        managerName: document.getElementById('modalManagerName'),
+        managerPhone: document.getElementById('modalManagerPhone'),
+        direction: document.getElementById('modalDirection'),
+        note: document.getElementById('modalNote')
+    };
+
+    const rentTypeCheckboxes = Array.from(modalForm.querySelectorAll('input[name="rentTypes"]'));
+
+    function openModal() {
+        modalRoot.hidden = false;
+        modalRoot.classList.add('is-open');
+        document.body.classList.add('modal-open');
+    }
+
+    function closeModal() {
+        modalRoot.hidden = true;
+        modalRoot.classList.remove('is-open');
+        document.body.classList.remove('modal-open');
+    }
+
+    function clearRentTypes() {
+        rentTypeCheckboxes.forEach((checkbox) => {
+            checkbox.checked = false;
+        });
+    }
+
+    function applyRentTypes(value) {
+        clearRentTypes();
+        if (!value) {
+            return;
+        }
+
+        value.split(',').map((item) => item.trim()).forEach((selectedValue) => {
+            const checkbox = rentTypeCheckboxes.find((item) => item.value === selectedValue);
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        });
+    }
+
+    function prepareCreateModal() {
+        modalForm.action = createAction;
+        modalTitle.textContent = 'Tạo tòa nhà';
+        modalSubtitle.textContent = 'Thêm mới một tòa nhà trực tiếp trong modal.';
+        modalSubmit.textContent = 'Lưu tòa nhà';
+        if (!hasCreateDraft) {
+            modalForm.reset();
+            clearRentTypes();
+        }
+    }
+
+    function prepareEditModal(button) {
+        modalForm.action = updateActionPrefix + button.dataset.id + '/cap-nhat';
+        modalTitle.textContent = 'Chỉnh sửa tòa nhà';
+        modalSubtitle.textContent = 'Cập nhật thông tin tòa nhà ngay trên trang danh sách.';
+        modalSubmit.textContent = 'Cập nhật';
+
+        fields.name.value = button.dataset.name || '';
+        fields.district.value = button.dataset.district || '';
+        fields.ward.value = button.dataset.ward || '';
+        fields.street.value = button.dataset.street || '';
+        fields.floorArea.value = button.dataset.floorArea || '';
+        fields.numberOfBasement.value = button.dataset.numberOfBasement || '';
+        fields.rentPrice.value = button.dataset.rentPrice || '';
+        fields.managerName.value = button.dataset.managerName || '';
+        fields.managerPhone.value = button.dataset.managerPhone || '';
+        fields.direction.value = button.dataset.direction || '';
+        fields.note.value = button.dataset.note || '';
+        applyRentTypes(button.dataset.rentTypes || '');
+    }
+
+    let isAjaxLoading = false;
+
+    function buildUrlFromForm(form) {
+        const url = new URL(form.action, window.location.origin);
+        const formData = new FormData(form);
+
+        for (const [key, value] of formData.entries()) {
+            if (value === null || value === undefined || String(value).trim() === '') {
+                continue;
+            }
+            url.searchParams.append(key, value);
+        }
+
+        if (!url.searchParams.has('page')) {
+            url.searchParams.set('page', '1');
+        }
+
+        return url;
+    }
+
+    function setLoadingState(isLoading) {
+        [document.getElementById('buildingSearchForm'), document.getElementById('building-summary'), document.getElementById('building-table-section')]
+            .filter(Boolean)
+            .forEach((element) => element.classList.toggle('is-loading', isLoading));
+    }
+
+    async function refreshBuildingPage(url, pushState = true) {
+        if (isAjaxLoading) {
+            return;
+        }
+
+        isAjaxLoading = true;
+        setLoadingState(true);
+
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Request failed with status ${response.status}`);
+            }
+
+            const html = await response.text();
+            const parsedDocument = new DOMParser().parseFromString(html, 'text/html');
+
+            const nextSearchForm = parsedDocument.getElementById('buildingSearchForm');
+            const nextSummary = parsedDocument.getElementById('building-summary');
+            const nextTableSection = parsedDocument.getElementById('building-table-section');
+
+            if (!nextSearchForm || !nextSummary || !nextTableSection) {
+                window.location.href = url;
+                return;
+            }
+
+            document.getElementById('buildingSearchForm')?.replaceWith(nextSearchForm);
+            document.getElementById('building-summary')?.replaceWith(nextSummary);
+            document.getElementById('building-table-section')?.replaceWith(nextTableSection);
+
+            if (pushState) {
+                window.history.pushState({}, '', url);
+            }
+        } catch (error) {
+            window.location.href = url;
+        } finally {
+            isAjaxLoading = false;
+            setLoadingState(false);
+        }
+    }
+
+    document.addEventListener('click', (event) => {
+        const openButton = event.target.closest('[data-open-modal="building-modal"]');
+        if (openButton) {
+            event.preventDefault();
+            if (openButton.dataset.modalMode === 'edit') {
+                prepareEditModal(openButton);
+            } else {
+                prepareCreateModal();
+            }
+            openModal();
+            return;
+        }
+
+        const closeButton = event.target.closest('[data-close-modal]');
+        if (closeButton) {
+            event.preventDefault();
+            closeModal();
+            return;
+        }
+
+        const ajaxLink = event.target.closest('a[data-ajax-nav="true"]');
+        if (ajaxLink) {
+            event.preventDefault();
+            if (ajaxLink.getAttribute('href') === '#') {
+                return;
+            }
+            refreshBuildingPage(ajaxLink.href);
+        }
+    });
+
+    document.addEventListener('submit', (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) {
+            return;
+        }
+
+        if (form.id === 'buildingSearchForm' || form.classList.contains('page-jump-form')) {
+            event.preventDefault();
+            const requestUrl = buildUrlFromForm(form);
+            refreshBuildingPage(requestUrl.toString());
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !modalRoot.hidden) {
+            closeModal();
+        }
+    });
+
+    window.addEventListener('popstate', () => {
+        refreshBuildingPage(window.location.href, false);
+    });
+
+    if (hasCreateDraft) {
+        prepareCreateModal();
+        openModal();
+    }
+</script>
+</body>
+</html>

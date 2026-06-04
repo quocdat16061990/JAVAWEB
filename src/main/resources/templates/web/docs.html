@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài liệu API</title>
+    <link rel="stylesheet" th:href="@{/web-app/css/site.css}">
+</head>
+<body>
+<div class="shell">
+    <nav class="topbar">
+        <a class="brand" th:href="${webHomeUrl}" th:text="${appName}">Website quản lý bất động sản</a>
+        <div class="nav-links">
+            <a th:href="${webBuildingsUrl}">Tòa nhà</a>
+            <a th:href="${webLoginUrl}">Đăng nhập JWT</a>
+            <a th:href="${swaggerUiUrl}" target="_blank" rel="noreferrer">Mở Swagger riêng</a>
+        </div>
+    </nav>
+
+    <section class="card docs-hero">
+        <p class="eyebrow">Tài liệu API</p>
+        <h1>Swagger UI được nhúng vào giao diện web</h1>
+        <p class="lead small">
+            Hãy đăng nhập trước để lấy JWT, sau đó nhấn <strong>Authorize</strong> trong Swagger và dán theo định dạng <code>Bearer &lt;jwt-token&gt;</code>.
+        </p>
+
+        <div class="grid two-up compact">
+            <article class="mini-card">
+                <h2>Swagger UI</h2>
+                <p><code th:text="${swaggerUiUrl}"></code></p>
+            </article>
+            <article class="mini-card">
+                <h2>OpenAPI JSON</h2>
+                <p><code th:text="${openApiJsonUrl}"></code></p>
+            </article>
+        </div>
+    </section>
+
+    <section class="card token-helper">
+        <div class="inline-group">
+            <input id="swaggerToken" type="text" placeholder="Dán JWT vào đây để lưu tạm trên trình duyệt">
+            <button class="button button-primary" id="saveToken" type="button">Lưu token</button>
+            <button class="button button-secondary" id="clearToken" type="button">Xóa token</button>
+        </div>
+        <p class="hint">Token được lưu tạm trong <code>localStorage</code>. Swagger vẫn yêu cầu bạn dán token trong hộp thoại Authorize để gọi API bảo vệ.</p>
+    </section>
+
+    <section class="card frame frame-docs">
+        <iframe th:src="${swaggerUiUrl}" title="Swagger UI"></iframe>
+    </section>
+</div>
+
+<script>
+    const tokenInput = document.getElementById('swaggerToken');
+    const saveTokenButton = document.getElementById('saveToken');
+    const clearTokenButton = document.getElementById('clearToken');
+
+    const storedToken = localStorage.getItem('jwt_token');
+    if (storedToken) {
+        tokenInput.value = storedToken;
+    }
+
+    saveTokenButton.addEventListener('click', () => {
+        localStorage.setItem('jwt_token', tokenInput.value.trim());
+        saveTokenButton.textContent = 'Đã lưu';
+        window.setTimeout(() => {
+            saveTokenButton.textContent = 'Lưu token';
+        }, 1200);
+    });
+
+    clearTokenButton.addEventListener('click', () => {
+        localStorage.removeItem('jwt_token');
+        tokenInput.value = '';
+    });
+</script>
+</body>
+</html>

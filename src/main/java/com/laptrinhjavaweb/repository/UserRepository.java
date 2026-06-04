@@ -11,8 +11,8 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     UserEntity findOneByUserNameAndStatus(String name, int status);
 
-    @Query(value = "select * from users u inner join user_role ur on u.id = ur.user_id where ur.role_id = ?1", nativeQuery = true)
+    @Query(value = "select u.* from users u inner join user_role ur on u.id = ur.user_id where ur.role_id = ?1", nativeQuery = true)
     List<UserEntity> findByRoles(Long roleId);
-    @Query(value = "select * from users u join assignmentbuilding a on u.id = a.staffid where a.buildingid = ?1",nativeQuery = true)
+    @Query(value = "select u.* from users u join assignmentbuilding a on u.id = a.staffid where a.buildingid = ?1",nativeQuery = true)
     List<UserEntity> findByBuilding(Long buildingId);
 }

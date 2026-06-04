@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chỉnh sửa tòa nhà</title>
+    <link rel="stylesheet" th:href="@{/web-app/css/site.css}">
+</head>
+<body>
+<div class="shell narrow">
+    <nav class="topbar">
+        <a class="brand" th:href="${webHomeUrl}" th:text="${appName}">Website quản lý bất động sản</a>
+        <div class="nav-links">
+            <a th:href="${webBuildingsUrl}">Danh sách tòa nhà</a>
+            <a th:href="@{/web/toa-nha/{id}/nhan-vien(id=${building.id})}">Gán nhân viên</a>
+            <a th:href="${webDocsUrl}">Tài liệu API</a>
+        </div>
+    </nav>
+
+    <section class="page-title page-banner">
+        <div>
+            <p class="eyebrow">Chỉnh sửa tòa nhà</p>
+            <h1 th:text="${building.name}">Tên tòa nhà</h1>
+            <p class="lead small">Cập nhật trực tiếp các trường quan trọng để kiểm thử nhanh luồng sửa dữ liệu.</p>
+        </div>
+    </section>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+    <section class="card">
+        <form class="form-grid" th:action="@{/web/toa-nha/{id}/cap-nhat(id=${building.id})}" method="post">
+            <div class="grid form-two-col">
+                <label>
+                    Tên tòa nhà
+                    <input type="text" name="name" th:value="${building.name}" required>
+                </label>
+                <label>
+                    Quận
+                    <select name="district">
+                        <option value="">Chọn quận</option>
+                        <option th:each="district : ${districtOptions}"
+                                th:value="${district.key}"
+                                th:text="${district.value}"
+                                th:selected="${district.key == building.district}"></option>
+                    </select>
+                </label>
+                <label>
+                    Phường
+                    <input type="text" name="ward" th:value="${building.ward}">
+                </label>
+                <label>
+                    Đường
+                    <input type="text" name="street" th:value="${building.street}">
+                </label>
+                <label>
+                    Diện tích sàn
+                    <input type="number" name="floorArea" th:value="${building.floorArea}">
+                </label>
+                <label>
+                    Số tầng hầm
+                    <input type="number" name="numberOfBasement" th:value="${building.numberOfBasement}">
+                </label>
+                <label>
+                    Giá thuê
+                    <input type="number" name="rentPrice" th:value="${building.rentPrice}">
+                </label>
+                <label>
+                    Hướng
+                    <input type="text" name="direction" th:value="${building.direction}">
+                </label>
+                <label>
+                    Người quản lý
+                    <input type="text" name="managerName" th:value="${building.managerName}">
+                </label>
+                <label>
+                    Số điện thoại quản lý
+                    <input type="text" name="managerPhone" th:value="${building.managerPhone}">
+                </label>
+            </div>
+
+            <label>
+                Ghi chú
+                <textarea name="note" rows="5" th:text="${building.note}"></textarea>
+            </label>
+
+            <fieldset class="checkbox-group">
+                <legend>Loại hình thuê</legend>
+                <div class="chip-grid">
+                    <label class="check-item chip-item" th:each="rentType : ${rentTypeOptions}">
+                        <input type="checkbox"
+                               name="rentTypes"
+                               th:value="${rentType.key}"
+                               th:checked="${building.rentTypes != null and #arrays.contains(building.rentTypes, rentType.key)}">
+                        <span th:text="${rentType.value}"></span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <div class="button-row">
+                <button class="button button-primary" type="submit">Lưu thay đổi</button>
+                <a class="button button-secondary" th:href="${webBuildingsUrl}">Quay lại danh sách</a>
+                <a class="button button-secondary" th:href="@{/web/toa-nha/{id}/nhan-vien(id=${building.id})}">Quản lý nhân viên</a>
+            </div>
+        </form>
+    </section>
+</div>
+</body>
+</html>

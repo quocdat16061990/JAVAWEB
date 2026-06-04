@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập JWT</title>
+    <link rel="stylesheet" th:href="@{/web-app/css/site.css}">
+</head>
+<body>
+<div class="shell narrow">
+    <nav class="topbar">
+        <a class="brand" th:href="${webHomeUrl}" th:text="${appName}">Website quản lý bất động sản</a>
+        <div class="nav-links">
+            <a th:href="${webBuildingsUrl}">Tòa nhà</a>
+            <a th:href="${webDocsUrl}">Tài liệu API</a>
+            <a th:href="${swaggerUiUrl}" target="_blank" rel="noreferrer">Swagger UI</a>
+        </div>
+    </nav>
+
+    <section class="card form-card">
+        <p class="eyebrow">Đăng nhập JWT</p>
+        <h1>Lấy token xác thực từ backend</h1>
+        <p class="lead small">
+            Sau khi đăng nhập thành công, token sẽ được lưu vào <code>localStorage</code> để bạn sao chép sang Swagger hoặc các trang test khác.
+        </p>
+
+        <form id="loginForm" class="form-grid">
+            <div class="grid form-two-col">
+                <label>
+                    Tên đăng nhập
+                    <input id="username" name="username" type="text" value="admin" autocomplete="username">
+                </label>
+                <label>
+                    Mật khẩu
+                    <input id="password" name="password" type="password" value="123456" autocomplete="current-password">
+                </label>
+            </div>
+            <div class="button-row">
+                <button class="button button-primary" type="submit">Đăng nhập</button>
+                <button class="button button-secondary" type="button" id="copyToken">Sao chép token</button>
+            </div>
+        </form>
+
+        <div class="result-block">
+            <h2>Phản hồi từ API</h2>
+            <pre id="responseBox">Chưa gọi đăng nhập.</pre>
+        </div>
+
+        <div class="result-block">
+            <h2>JWT token</h2>
+            <textarea id="tokenBox" rows="8" spellcheck="false" placeholder="Token sẽ hiển thị ở đây sau khi đăng nhập thành công"></textarea>
+        </div>
+    </section>
+</div>
+
+<script th:inline="javascript">
+    const loginUrl = [[${loginUrl}]];
+    const form = document.getElementById('loginForm');
+    const responseBox = document.getElementById('responseBox');
+    const tokenBox = document.getElementById('tokenBox');
+    const copyTokenButton = document.getElementById('copyToken');
+
+    const storedToken = localStorage.getItem('jwt_token');
+    if (storedToken) {
+        tokenBox.value = storedToken;
+    }
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const payload = {
+            username: document.getElementById('username').value.trim(),
+            password: document.getElementById('password').value
+        };
+
+        responseBox.textContent = 'Đang gọi API đăng nhập...';
+
+        try {
+            const response = await fetch(loginUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            responseBox.textContent = JSON.stringify(data, null, 2);
+
+            if (response.ok && data.token) {
+                localStorage.setItem('jwt_token', data.token);
+                tokenBox.value = data.token;
+            } else {
+                tokenBox.value = '';
+            }
+        } catch (error) {
+            responseBox.textContent = error.message;
+        }
+    });
+
+    copyTokenButton.addEventListener('click', async () => {
+        if (!tokenBox.value.trim()) {
+            return;
+        }
+
+        await navigator.clipboard.writeText(tokenBox.value.trim());
+        copyTokenButton.textContent = 'Đã sao chép';
+        window.setTimeout(() => {
+            copyTokenButton.textContent = 'Sao chép token';
+        }, 1200);
+    });
+</script>
+</body>
+</html>

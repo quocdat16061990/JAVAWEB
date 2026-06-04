@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gán nhân viên</title>
+    <link rel="stylesheet" th:href="@{/web-app/css/site.css}">
+</head>
+<body>
+<div class="shell narrow">
+    <nav class="topbar">
+        <a class="brand" th:href="${webHomeUrl}" th:text="${appName}">Website quản lý bất động sản</a>
+        <div class="nav-links">
+            <a th:href="${webBuildingsUrl}">Danh sách tòa nhà</a>
+            <a th:href="@{/web/toa-nha/{id}/sua(id=${building.id})}">Chỉnh sửa tòa nhà</a>
+            <a th:href="${webDocsUrl}">Tài liệu API</a>
+        </div>
+    </nav>
+
+    <section class="page-title page-banner">
+        <div>
+            <p class="eyebrow">Phân công nhân viên</p>
+            <h1 th:text="'Tòa nhà: ' + ${building.name}">Tòa nhà</h1>
+            <p class="lead small">Chọn các nhân viên phụ trách tòa nhà này rồi bấm lưu để cập nhật ngay vào hệ thống.</p>
+        </div>
+    </section>
+
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-error" th:text="${errorMessage}"></div>
+
+    <section class="card info-card">
+        <div class="info-grid">
+            <div>
+                <span class="info-label">Tên tòa nhà</span>
+                <strong th:text="${building.name}"></strong>
+            </div>
+            <div>
+                <span class="info-label">Quận</span>
+                <strong th:text="${building.district != null ? (districtOptions[building.district] ?: building.district) : 'Chưa cập nhật'}"></strong>
+            </div>
+            <div>
+                <span class="info-label">Quản lý</span>
+                <strong th:text="${building.managerName != null ? building.managerName : 'Chưa cập nhật'}"></strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Danh sách nhân viên có thể gán</h2>
+        <form class="form-grid" th:action="@{/web/toa-nha/{id}/nhan-vien(id=${building.id})}" method="post">
+            <div class="staff-grid">
+                <label class="staff-card" th:each="staff : ${staffs}">
+                    <input type="checkbox"
+                           name="staffs"
+                           th:value="${staff.id}"
+                           th:checked="${staff.checked == 'checked'}">
+                    <div>
+                        <strong th:text="${staff.fullName}">Tên nhân viên</strong>
+                        <p th:text="${staff.userName}">username</p>
+                    </div>
+                </label>
+            </div>
+
+            <div class="button-row">
+                <button class="button button-primary" type="submit">Lưu phân công</button>
+                <a class="button button-secondary" th:href="@{/web/toa-nha/{id}/sua(id=${building.id})}">Quay lại chỉnh sửa</a>
+            </div>
+        </form>
+    </section>
+</div>
+</body>
+</html>

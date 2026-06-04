@@ -10,6 +10,8 @@ import com.laptrinhjavaweb.repository.BuildingRepository;
 import com.laptrinhjavaweb.repository.custom.BuildingRepositoryCustom;
 import com.laptrinhjavaweb.service.IBuildingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,31 +62,50 @@ public class BuildingServiceImpl implements IBuildingService {
 
     @Override
     public void delete(Long id) {
-        buildingRepository.delete(id);
+        buildingRepository.deleteById(id);
     }
 
     @Override
     public void updateBuilding(BuildingDTO buildingDTO,Long id) {
-//        buildingDTO.getId() ID moi
-        if(buildingRepository.findById(id).isPresent()){
-            BuildingEntity buildingEntity = buildingConverter.convertToEntity(buildingDTO);
-            buildingRepository.save(buildingEntity);
-        }
+        BuildingEntity buildingEntity = buildingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Building not found with id: " + id));
+
+        buildingEntity.setName(buildingDTO.getName());
+        buildingEntity.setDistrict(buildingDTO.getDistrict());
+        buildingEntity.setWard(buildingDTO.getWard());
+        buildingEntity.setStreet(buildingDTO.getStreet());
+        buildingEntity.setFloorArea(buildingDTO.getFloorArea());
+        buildingEntity.setNumberOfBasement(buildingDTO.getNumberOfBasement());
+        buildingEntity.setRentPrice(buildingDTO.getRentPrice());
+        buildingEntity.setManagerName(buildingDTO.getManagerName());
+        buildingEntity.setManagerPhone(buildingDTO.getManagerPhone());
+        buildingEntity.setDirection(buildingDTO.getDirection());
+        buildingEntity.setNote(buildingDTO.getNote());
+        buildingEntity.setType(buildingDTO.getRentTypes() == null || buildingDTO.getRentTypes().length == 0
+                ? null
+                : String.join(",", buildingDTO.getRentTypes()));
+
+        buildingRepository.save(buildingEntity);
     }
 
 
 
     @Override
     public List<BuildingDTO> findAll(BuildingDTO model) {
-        List<BuildingDTO> result = new ArrayList<>();
+        return findAll(model, Pageable.unpaged()).getContent();
+    }
 
-        List<BuildingEntity> entities = buildingRepositoryCustom.findAll(model);
-        for (BuildingEntity item: entities){
+    @Override
+    public Page<BuildingDTO> findAll(BuildingDTO model, Pageable pageable) {
+        Page<BuildingEntity> entities = buildingRepositoryCustom.findAll(model, pageable);
+        return entities.map(buildingConverter::convertToDTO);
+    }
 
-            BuildingDTO buildingDTO=buildingConverter.convertToDTO(item);
-            result.add(buildingDTO);
-        }
-        return result;
+    @Override
+    public BuildingDTO findById(Long id) {
+        BuildingEntity entity = buildingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Building not found with id: " + id));
+        return buildingConverter.convertToDTO(entity);
     }
 
 //    @Override
